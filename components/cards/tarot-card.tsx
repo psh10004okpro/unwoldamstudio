@@ -1,6 +1,6 @@
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { TarotCard as TarotCardType } from '@/lib/types';
-import { getCardImageUrl } from '@/lib/utils';
+import { CardImage } from '@/components/cards/card-image';
 import Link from 'next/link';
 
 interface TarotCardProps {
@@ -12,12 +12,7 @@ export function TarotCard({ card }: TarotCardProps) {
     <Link href={`/cards/${card.nameShort}`}>
       <Card className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer h-full">
         <CardHeader className="p-0">
-          <div className="aspect-[2/3] bg-gradient-to-br from-purple-100 to-blue-100 dark:from-purple-900 dark:to-blue-900 flex items-center justify-center">
-            <div className="text-center p-6">
-              <div className="text-4xl mb-2">{card.value}</div>
-              <div className="text-sm font-medium">{card.nameShort}</div>
-            </div>
-          </div>
+          <CardImage card={card} />
         </CardHeader>
         <CardContent className="p-4">
           <CardTitle className="text-lg mb-2">{card.name}</CardTitle>

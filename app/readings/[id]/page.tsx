@@ -6,6 +6,7 @@ import { readingsApi } from '@/lib/api/endpoints';
 import { Reading } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { CardImage } from '@/components/cards/card-image';
 import Link from 'next/link';
 import { ArrowLeft, Heart, MessageCircle, Globe, Lock, Trash2 } from 'lucide-react';
 import { formatDateTime } from '@/lib/utils';
@@ -196,12 +197,7 @@ export default function ReadingDetailPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
             {reading.cards.map((cardData, index) => (
               <div key={index} className="text-center">
-                <div className="aspect-[2/3] bg-gradient-to-br from-purple-100 to-blue-100 dark:from-purple-900 dark:to-blue-900 rounded-lg flex items-center justify-center mb-2 p-4">
-                  <div className={cardData.isReversed ? 'rotate-180' : ''}>
-                    <div className="text-4xl mb-2">{cardData.card.value}</div>
-                    <div className="text-xs font-medium">{cardData.card.nameShort}</div>
-                  </div>
-                </div>
+                <CardImage card={cardData.card} isReversed={cardData.isReversed} className="mb-2" />
                 <p className="text-sm font-medium mb-1">
                   {positionNames[reading.spreadType]?.[index] || `${index + 1}번째 카드`}
                 </p>

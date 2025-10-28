@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { CardImage } from '@/components/cards/card-image';
 import { useAuth } from '@/contexts/auth-context';
 import { Sparkles, ArrowLeft, Shuffle } from 'lucide-react';
 import Link from 'next/link';
@@ -258,12 +259,7 @@ export default function NewReadingPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                 {drawnCards.map((card, index) => (
                   <div key={index} className="text-center">
-                    <div className="aspect-[2/3] bg-gradient-to-br from-purple-100 to-blue-100 dark:from-purple-900 dark:to-blue-900 rounded-lg flex items-center justify-center mb-2 p-4">
-                      <div>
-                        <div className="text-4xl mb-2">{card.value}</div>
-                        <div className="text-xs font-medium">{card.nameShort}</div>
-                      </div>
-                    </div>
+                    <CardImage card={card} className="mb-2" />
                     <p className="text-sm font-medium">{card.name}</p>
                   </div>
                 ))}

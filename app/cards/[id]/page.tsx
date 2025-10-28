@@ -6,6 +6,7 @@ import { cardsApi } from '@/lib/api/endpoints';
 import { TarotCard } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { CardImage } from '@/components/cards/card-image';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 
@@ -69,14 +70,7 @@ export default function CardDetailPage() {
       <div className="grid md:grid-cols-2 gap-8">
         {/* Card Image */}
         <div>
-          <Card className="overflow-hidden">
-            <div className="aspect-[2/3] bg-gradient-to-br from-purple-100 to-blue-100 dark:from-purple-900 dark:to-blue-900 flex items-center justify-center p-8">
-              <div className="text-center">
-                <div className="text-8xl mb-4">{card.value}</div>
-                <div className="text-2xl font-medium">{card.nameShort}</div>
-              </div>
-            </div>
-          </Card>
+          <CardImage card={card} className="w-full" />
         </div>
 
         {/* Card Info */}
