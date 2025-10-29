@@ -1,0 +1,56 @@
+# 이 폴더에 타로 카드 이미지 78장을 업로드하세요
+
+이 `.gitkeep` 파일은 빈 폴더를 Git에 포함시키기 위한 플레이스홀더입니다.
+
+## 📁 폴더 구조
+
+```
+public/cards/
+├── .gitkeep         (이 파일)
+├── ar00.jpg         (The Fool)
+├── ar01.jpg         (The Magician)
+├── ar02.jpg         (The High Priestess)
+└── ... (총 78장)
+```
+
+## 📤 이미지 업로드 방법
+
+자세한 내용은 프로젝트 루트의 `UPLOAD_IMAGES_GUIDE.md`를 참고하세요.
+
+### 빠른 가이드
+
+1. 78장의 타로 카드 이미지를 다운로드
+2. 파일명을 규칙에 맞게 변경 (예: ar00.jpg, cu02.jpg)
+3. 이 폴더에 복사
+4. Git으로 커밋 및 푸시
+
+```bash
+# 이미지 복사
+cp /path/to/images/*.jpg public/cards/
+
+# 확인
+bash scripts/check-images.sh
+
+# 커밋
+git add public/cards/*.jpg
+git commit -m "feat: Add tarot card images"
+git push
+```
+
+## 📝 필요한 파일명 목록
+
+스크립트 실행:
+```bash
+bash scripts/generate-filenames.sh
+```
+
+## 🔗 무료 이미지 다운로드
+
+- Wikimedia Commons: https://commons.wikimedia.org/wiki/Category:Rider-Waite_tarot_deck
+- Sacred Texts: https://www.sacred-texts.com/tarot/pkt/
+
+## ⚠️ 주의사항
+
+- 파일명은 반드시 **소문자**
+- 확장자는 `.jpg` (PNG도 가능하지만 JPG 권장)
+- 총 78장 필요 (Major 22장 + Minor 56장)
