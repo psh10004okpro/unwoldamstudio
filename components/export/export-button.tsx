@@ -35,6 +35,28 @@ export function ExportButton({ reading, variant = 'outline', size = 'sm' }: Expo
     'general': '일반',
   };
 
+  // 이미지를 Base64로 로드하는 헬퍼 함수
+  const loadImageAsBase64 = (url: string): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const img = new window.Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0);
+          resolve(canvas.toDataURL('image/jpeg', 0.8));
+        } else {
+          reject(new Error('Canvas context error'));
+        }
+      };
+      img.onerror = () => reject(new Error('Image load error'));
+      img.src = url;
+    });
+  };
+
   // PDF 내보내기
   const handleExportPDF = async () => {
     try {
@@ -77,18 +99,67 @@ export function ExportButton({ reading, variant = 'outline', size = 'sm' }: Expo
       yPosition += 10;
       pdf.setTextColor(0);
 
-      // 뽑은 카드
+      // 뽑은 카드 (이미지 포함)
       pdf.setFontSize(14);
       pdf.text('뽑은 카드', margin, yPosition);
-      yPosition += 7;
+      yPosition += 10;
 
-      pdf.setFontSize(10);
-      reading.cards.forEach((cardData, index) => {
-        const cardText = `${index + 1}. ${cardData.card.name}${cardData.isReversed ? ' (역방향)' : ''}`;
-        pdf.text(cardText, margin + 5, yPosition);
-        yPosition += 6;
-      });
-      yPosition += 5;
+      // 카드 이미지 로드 및 배치
+      const cardImageWidth = 25; // mm
+      const cardImageHeight = 42; // mm (2:3 비율)
+      const cardSpacing = 5; // mm
+      const cardsPerRow = Math.min(5, reading.cards.length);
+
+      // 카드 배치 전 공간 확인
+      const totalRows = Math.ceil(reading.cards.length / cardsPerRow);
+      const cardsBlockHeight = totalRows * (cardImageHeight + 15);
+
+      if (yPosition + cardsBlockHeight > pageHeight - margin - 20) {
+        pdf.addPage();
+        yPosition = margin;
+      }
+
+      for (let i = 0; i < reading.cards.length; i++) {
+        const cardData = reading.cards[i];
+        const row = Math.floor(i / cardsPerRow);
+        const col = i % cardsPerRow;
+
+        const xPosition = margin + col * (cardImageWidth + cardSpacing);
+        const cardYPosition = yPosition + row * (cardImageHeight + 15);
+
+        try {
+          // 카드 이미지 로드
+          const imageUrl = `/cards/webp/${cardData.card.nameShort.toLowerCase()}-thumb.webp`;
+          const imageData = await loadImageAsBase64(imageUrl);
+
+          // PDF에 이미지 추가
+          pdf.addImage(imageData, 'JPEG', xPosition, cardYPosition, cardImageWidth, cardImageHeight);
+
+          // 역방향일 경우 "R" 배지 추가
+          if (cardData.isReversed) {
+            pdf.setFillColor(220, 53, 69); // red
+            pdf.circle(xPosition + cardImageWidth - 4, cardYPosition + 4, 3, 'F');
+            pdf.setTextColor(255, 255, 255);
+            pdf.setFontSize(6);
+            pdf.text('R', xPosition + cardImageWidth - 4, cardYPosition + 5, { align: 'center' });
+            pdf.setTextColor(0);
+          }
+        } catch (error) {
+          console.error('Failed to load card image:', error);
+          // 이미지 로드 실패 시 사각형으로 대체
+          pdf.setDrawColor(200);
+          pdf.rect(xPosition, cardYPosition, cardImageWidth, cardImageHeight);
+        }
+
+        // 카드 이름
+        pdf.setFontSize(7);
+        const cardName = cardData.card.name.length > 12 ? cardData.card.name.substring(0, 12) + '...' : cardData.card.name;
+        const cardLabel = `${cardName}${cardData.isReversed ? ' (R)' : ''}`;
+        pdf.text(cardLabel, xPosition + cardImageWidth / 2, cardYPosition + cardImageHeight + 4, { align: 'center' });
+      }
+
+      // 다음 섹션 시작 위치 계산
+      yPosition += cardsBlockHeight + 10;
 
       // AI 해석
       pdf.setFontSize(14);
