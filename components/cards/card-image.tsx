@@ -8,9 +8,10 @@ interface CardImageProps {
   card: TarotCard;
   isReversed?: boolean;
   className?: string;
+  size?: 'thumb' | 'detail'; // thumb: 400x670, detail: 800x1340
 }
 
-export function CardImage({ card, isReversed = false, className = '' }: CardImageProps) {
+export function CardImage({ card, isReversed = false, className = '', size = 'detail' }: CardImageProps) {
   const [imageError, setImageError] = useState(false);
 
   // 카드 타입별 색상 (fallback용)
@@ -38,7 +39,10 @@ export function CardImage({ card, isReversed = false, className = '' }: CardImag
 
   const colors = getCardColors();
   const rotate = isReversed ? 'rotate-180' : '';
-  const imageUrl = `/cards/${card.nameShort.toLowerCase()}.jpg`;
+
+  // WebP 최적화 이미지 사용 (thumb: 400x670, detail: 800x1340)
+  const suffix = size === 'thumb' ? '-thumb' : '';
+  const imageUrl = `/cards/webp/${card.nameShort.toLowerCase()}${suffix}.webp`;
 
   // 이미지가 없거나 로드 실패 시 그라데이션 표시
   if (imageError) {
@@ -102,7 +106,10 @@ export function CardImage({ card, isReversed = false, className = '' }: CardImag
         alt={card.name}
         fill
         className="object-cover"
-        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+        sizes={size === 'thumb'
+          ? '(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw'
+          : '(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 800px'
+        }
         onError={() => setImageError(true)}
         priority={false}
       />

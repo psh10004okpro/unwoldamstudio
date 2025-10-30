@@ -12,7 +12,7 @@ export function TarotCard({ card }: TarotCardProps) {
     <Link href={`/cards/${card.nameShort}`}>
       <Card className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer h-full">
         <CardHeader className="p-0">
-          <CardImage card={card} />
+          <CardImage card={card} size="thumb" />
         </CardHeader>
         <CardContent className="p-4">
           <CardTitle className="text-lg mb-2">{card.name}</CardTitle>
