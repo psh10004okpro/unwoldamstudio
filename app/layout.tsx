@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/contexts/auth-context";
+import { KakaoProvider } from "@/components/providers/kakao-provider";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { WebsiteSchema, OrganizationSchema, WebApplicationSchema } from "@/components/seo/structured-data";
@@ -61,6 +62,7 @@ export default function RootLayout({
         <WebsiteSchema />
         <OrganizationSchema />
         <WebApplicationSchema />
+        <KakaoProvider />
         <AuthProvider>
           <div className="flex min-h-screen flex-col">
             <Header />
