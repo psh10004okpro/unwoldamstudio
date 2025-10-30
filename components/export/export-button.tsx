@@ -57,6 +57,98 @@ export function ExportButton({ reading, variant = 'outline', size = 'sm' }: Expo
     });
   };
 
+  // 단일 카드 렌더링 (역방향 회전 포함)
+  const renderCard = async (
+    pdf: jsPDF,
+    cardData: any,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    loadImage: (url: string) => Promise<string>
+  ) => {
+    try {
+      const imageUrl = `/cards/webp/${cardData.card.nameShort.toLowerCase()}-thumb.webp`;
+      const imageData = await loadImage(imageUrl);
+
+      if (cardData.isReversed) {
+        // 역방향: 180도 회전
+        const centerX = x + width / 2;
+        const centerY = y + height / 2;
+
+        pdf.saveGraphicsState();
+        // 회전 중심점 이동 → 회전 → 이미지 그리기
+        pdf.addImage(imageData, 'JPEG', x, y, width, height, undefined, 'NONE', 180);
+        pdf.restoreGraphicsState();
+      } else {
+        // 정방향: 일반 배치
+        pdf.addImage(imageData, 'JPEG', x, y, width, height);
+      }
+    } catch (error) {
+      console.error('Failed to load card image:', error);
+      pdf.setDrawColor(200);
+      pdf.rect(x, y, width, height);
+    }
+
+    // 카드 이름
+    pdf.setFontSize(7);
+    pdf.setTextColor(0);
+    const cardName = cardData.card.name.length > 12
+      ? cardData.card.name.substring(0, 12) + '...'
+      : cardData.card.name;
+    const cardLabel = `${cardName}${cardData.isReversed ? ' (역)' : ''}`;
+    pdf.text(cardLabel, x + width / 2, y + height + 4, { align: 'center' });
+  };
+
+  // 켈틱크로스 십자가 레이아웃
+  const renderCelticCrossLayout = async (
+    pdf: jsPDF,
+    cards: any[],
+    startX: number,
+    startY: number,
+    cardWidth: number,
+    cardHeight: number,
+    loadImage: (url: string) => Promise<string>
+  ) => {
+    const spacing = 5;
+
+    /*
+      켈틱크로스 배치:
+              [4]
+        [5] [0][1] [6]
+              [2]
+              [3]
+
+              [7][8][9]
+    */
+
+    // 중앙 십자가 (카드 0-6)
+    const centerX = startX + 60;
+    const centerY = startY + 10;
+
+    // 위치 정의
+    const positions = [
+      { x: centerX, y: centerY + cardHeight },                    // 0: 현재 상황 (중앙)
+      { x: centerX + cardWidth + spacing, y: centerY + cardHeight }, // 1: 도전과 장애 (가로로 겹침)
+      { x: centerX, y: centerY + cardHeight * 2 + spacing },     // 2: 의식적 목표 (아래)
+      { x: centerX, y: centerY },                                 // 3: 무의식적 기반 (위)
+      { x: centerX - cardWidth - spacing, y: centerY + cardHeight }, // 4: 최근 과거 (왼쪽)
+      { x: centerX + cardWidth + spacing, y: centerY + cardHeight }, // 5: 가까운 미래 (오른쪽)
+
+      // 오른쪽 수직 라인 (카드 6-9)
+      { x: centerX + (cardWidth + spacing) * 2.5, y: centerY },   // 6: 당신의 태도
+      { x: centerX + (cardWidth + spacing) * 2.5, y: centerY + cardHeight + spacing }, // 7: 주변 환경
+      { x: centerX + (cardWidth + spacing) * 2.5, y: centerY + (cardHeight + spacing) * 2 }, // 8: 희망과 두려움
+      { x: centerX + (cardWidth + spacing) * 2.5, y: centerY + (cardHeight + spacing) * 3 }, // 9: 최종 결과
+    ];
+
+    // 각 카드 렌더링
+    for (let i = 0; i < Math.min(cards.length, 10); i++) {
+      const pos = positions[i];
+      await renderCard(pdf, cards[i], pos.x, pos.y, cardWidth, cardHeight, loadImage);
+    }
+  };
+
   // PDF 내보내기
   const handleExportPDF = async () => {
     try {
@@ -108,58 +200,36 @@ export function ExportButton({ reading, variant = 'outline', size = 'sm' }: Expo
       const cardImageWidth = 25; // mm
       const cardImageHeight = 42; // mm (2:3 비율)
       const cardSpacing = 5; // mm
-      const cardsPerRow = Math.min(5, reading.cards.length);
 
-      // 카드 배치 전 공간 확인
-      const totalRows = Math.ceil(reading.cards.length / cardsPerRow);
-      const cardsBlockHeight = totalRows * (cardImageHeight + 15);
+      // 스프레드 타입별 커스텀 레이아웃
+      if (reading.spreadType === 'celtic-cross' && reading.cards.length === 10) {
+        // 켈틱크로스 십자가 형태 배치
+        await renderCelticCrossLayout(pdf, reading.cards, margin, yPosition, cardImageWidth, cardImageHeight, loadImageAsBase64);
+        yPosition += 140; // 십자가 레이아웃 높이
+      } else {
+        // 일반 그리드 레이아웃
+        const cardsPerRow = Math.min(5, reading.cards.length);
+        const totalRows = Math.ceil(reading.cards.length / cardsPerRow);
+        const cardsBlockHeight = totalRows * (cardImageHeight + 15);
 
-      if (yPosition + cardsBlockHeight > pageHeight - margin - 20) {
-        pdf.addPage();
-        yPosition = margin;
-      }
-
-      for (let i = 0; i < reading.cards.length; i++) {
-        const cardData = reading.cards[i];
-        const row = Math.floor(i / cardsPerRow);
-        const col = i % cardsPerRow;
-
-        const xPosition = margin + col * (cardImageWidth + cardSpacing);
-        const cardYPosition = yPosition + row * (cardImageHeight + 15);
-
-        try {
-          // 카드 이미지 로드
-          const imageUrl = `/cards/webp/${cardData.card.nameShort.toLowerCase()}-thumb.webp`;
-          const imageData = await loadImageAsBase64(imageUrl);
-
-          // PDF에 이미지 추가
-          pdf.addImage(imageData, 'JPEG', xPosition, cardYPosition, cardImageWidth, cardImageHeight);
-
-          // 역방향일 경우 "R" 배지 추가
-          if (cardData.isReversed) {
-            pdf.setFillColor(220, 53, 69); // red
-            pdf.circle(xPosition + cardImageWidth - 4, cardYPosition + 4, 3, 'F');
-            pdf.setTextColor(255, 255, 255);
-            pdf.setFontSize(6);
-            pdf.text('R', xPosition + cardImageWidth - 4, cardYPosition + 5, { align: 'center' });
-            pdf.setTextColor(0);
-          }
-        } catch (error) {
-          console.error('Failed to load card image:', error);
-          // 이미지 로드 실패 시 사각형으로 대체
-          pdf.setDrawColor(200);
-          pdf.rect(xPosition, cardYPosition, cardImageWidth, cardImageHeight);
+        if (yPosition + cardsBlockHeight > pageHeight - margin - 20) {
+          pdf.addPage();
+          yPosition = margin;
         }
 
-        // 카드 이름
-        pdf.setFontSize(7);
-        const cardName = cardData.card.name.length > 12 ? cardData.card.name.substring(0, 12) + '...' : cardData.card.name;
-        const cardLabel = `${cardName}${cardData.isReversed ? ' (R)' : ''}`;
-        pdf.text(cardLabel, xPosition + cardImageWidth / 2, cardYPosition + cardImageHeight + 4, { align: 'center' });
-      }
+        for (let i = 0; i < reading.cards.length; i++) {
+          const cardData = reading.cards[i];
+          const row = Math.floor(i / cardsPerRow);
+          const col = i % cardsPerRow;
 
-      // 다음 섹션 시작 위치 계산
-      yPosition += cardsBlockHeight + 10;
+          const xPosition = margin + col * (cardImageWidth + cardSpacing);
+          const cardYPosition = yPosition + row * (cardImageHeight + 15);
+
+          await renderCard(pdf, cardData, xPosition, cardYPosition, cardImageWidth, cardImageHeight, loadImageAsBase64);
+        }
+
+        yPosition += cardsBlockHeight + 10;
+      }
 
       // AI 해석
       pdf.setFontSize(14);
