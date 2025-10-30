@@ -11,6 +11,7 @@ import Link from 'next/link';
 import { ArrowLeft, Heart, MessageCircle, Globe, Lock, Trash2 } from 'lucide-react';
 import { formatDateTime } from '@/lib/utils';
 import { ShareButton } from '@/components/share/share-dialog';
+import { ExportButton } from '@/components/export/export-button';
 
 export default function ReadingDetailPage() {
   const params = useParams();
@@ -172,6 +173,11 @@ export default function ReadingDetailPage() {
             url={`https://unwoldamstudio.vercel.app/readings/${reading.id}`}
             title={`타로 리딩: ${reading.question}`}
             description={`${spreadTypeLabels[reading.spreadType]} 스프레드 - ${categoryLabels[reading.category]}`}
+            variant="outline"
+            size="sm"
+          />
+          <ExportButton
+            reading={reading}
             variant="outline"
             size="sm"
           />
