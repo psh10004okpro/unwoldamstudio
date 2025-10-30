@@ -1,0 +1,14 @@
+node_modules
+.next
+.git
+.env.local
+.env*.local
+*.log
+.DS_Store
+coverage
+.vscode
+.idea
+README.md
+scripts/*.sh
+UPLOAD_IMAGES_GUIDE.md
+KOREAN_FILENAME_GUIDE.md
