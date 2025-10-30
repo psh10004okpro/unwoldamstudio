@@ -3,16 +3,25 @@ import { Button } from '@/components/ui/button';
 import { Reading } from '@/lib/types';
 import { formatDateTime } from '@/lib/utils';
 import Link from 'next/link';
-import { Heart, MessageCircle, Eye, Trash2, Lock, Globe } from 'lucide-react';
+import { Heart, MessageCircle, Eye, Trash2, Lock, Globe, User } from 'lucide-react';
 
 interface ReadingCardProps {
   reading: Reading;
   onDelete?: (id: string) => void;
   onToggleFavorite?: (id: string) => void;
+  onLike?: (id: string) => void;
   showActions?: boolean;
+  showCommunityFeatures?: boolean;
 }
 
-export function ReadingCard({ reading, onDelete, onToggleFavorite, showActions = true }: ReadingCardProps) {
+export function ReadingCard({
+  reading,
+  onDelete,
+  onToggleFavorite,
+  onLike,
+  showActions = true,
+  showCommunityFeatures = false
+}: ReadingCardProps) {
   const spreadTypeLabels = {
     'one-card': '원 카드',
     'three-card': '쓰리 카드',
@@ -29,6 +38,12 @@ export function ReadingCard({ reading, onDelete, onToggleFavorite, showActions =
   return (
     <Card className="hover:shadow-lg transition-shadow">
       <CardHeader>
+        {showCommunityFeatures && reading.user && (
+          <div className="flex items-center gap-2 mb-3 text-sm text-muted-foreground">
+            <User className="h-4 w-4" />
+            <span>{reading.user.username}</span>
+          </div>
+        )}
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <CardTitle className="text-lg mb-2">{reading.question}</CardTitle>
@@ -39,13 +54,15 @@ export function ReadingCard({ reading, onDelete, onToggleFavorite, showActions =
               <span className="text-xs bg-secondary text-secondary-foreground px-2 py-1 rounded">
                 {categoryLabels[reading.category]}
               </span>
-              <span className="text-xs bg-muted text-muted-foreground px-2 py-1 rounded flex items-center gap-1">
-                {reading.visibility === 'public' ? <Globe className="h-3 w-3" /> : <Lock className="h-3 w-3" />}
-                {reading.visibility === 'public' ? '공개' : '비공개'}
-              </span>
+              {!showCommunityFeatures && (
+                <span className="text-xs bg-muted text-muted-foreground px-2 py-1 rounded flex items-center gap-1">
+                  {reading.visibility === 'public' ? <Globe className="h-3 w-3" /> : <Lock className="h-3 w-3" />}
+                  {reading.visibility === 'public' ? '공개' : '비공개'}
+                </span>
+              )}
             </div>
           </div>
-          {reading.isFavorite && (
+          {!showCommunityFeatures && reading.isFavorite && (
             <Heart className="h-5 w-5 fill-red-500 text-red-500" />
           )}
         </div>
@@ -71,10 +88,22 @@ export function ReadingCard({ reading, onDelete, onToggleFavorite, showActions =
       </CardContent>
       <CardFooter className="flex items-center justify-between border-t pt-4">
         <div className="flex gap-4 text-xs text-muted-foreground">
-          <div className="flex items-center gap-1">
-            <Heart className="h-3 w-3" />
-            {reading.likesCount}
-          </div>
+          {showCommunityFeatures && onLike ? (
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => onLike(reading.id)}
+              className="flex items-center gap-1 px-2"
+            >
+              <Heart className={`h-4 w-4 ${reading.isLikedByUser ? 'fill-red-500 text-red-500' : ''}`} />
+              <span className={reading.isLikedByUser ? 'text-red-500' : ''}>{reading.likesCount}</span>
+            </Button>
+          ) : (
+            <div className="flex items-center gap-1">
+              <Heart className="h-3 w-3" />
+              {reading.likesCount}
+            </div>
+          )}
           <div className="flex items-center gap-1">
             <MessageCircle className="h-3 w-3" />
             {reading.commentsCount}
@@ -89,7 +118,7 @@ export function ReadingCard({ reading, onDelete, onToggleFavorite, showActions =
                 보기
               </Link>
             </Button>
-            {onToggleFavorite && (
+            {onToggleFavorite && !showCommunityFeatures && (
               <Button
                 size="sm"
                 variant="ghost"
