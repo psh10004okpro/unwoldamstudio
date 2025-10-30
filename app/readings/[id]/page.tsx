@@ -10,6 +10,7 @@ import { CardImage } from '@/components/cards/card-image';
 import Link from 'next/link';
 import { ArrowLeft, Heart, MessageCircle, Globe, Lock, Trash2 } from 'lucide-react';
 import { formatDateTime } from '@/lib/utils';
+import { ShareButton } from '@/components/share/share-dialog';
 
 export default function ReadingDetailPage() {
   const params = useParams();
@@ -157,7 +158,7 @@ export default function ReadingDetailPage() {
           </div>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <Button
             variant={reading.isFavorite ? 'default' : 'outline'}
             size="sm"
@@ -167,6 +168,13 @@ export default function ReadingDetailPage() {
             <Heart className={`h-4 w-4 ${reading.isFavorite ? 'fill-current' : ''}`} />
             {reading.isFavorite ? '즐겨찾기 해제' : '즐겨찾기'}
           </Button>
+          <ShareButton
+            url={`https://unwoldamstudio.vercel.app/readings/${reading.id}`}
+            title={`타로 리딩: ${reading.question}`}
+            description={`${spreadTypeLabels[reading.spreadType]} 스프레드 - ${categoryLabels[reading.category]}`}
+            variant="outline"
+            size="sm"
+          />
           <Button
             variant="outline"
             size="sm"
