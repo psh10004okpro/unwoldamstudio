@@ -5,10 +5,12 @@ import { useRouter } from 'next/navigation';
 import { readingsApi } from '@/lib/api/endpoints';
 import { Reading, ReadingFilters, CategoryType, SpreadType } from '@/lib/types';
 import { ReadingCard } from '@/components/readings/reading-card';
+import { ReadingCardSkeleton } from '@/components/readings/reading-card-skeleton';
 import { Button } from '@/components/ui/button';
 import { Plus, Filter } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/auth-context';
+import { toast } from 'sonner';
 
 export default function ReadingsPage() {
   const router = useRouter();
@@ -68,8 +70,9 @@ export default function ReadingsPage() {
     try {
       await readingsApi.delete(id);
       setReadings(readings.filter(r => r.id !== id));
+      toast.success('리딩이 삭제되었습니다');
     } catch (err: any) {
-      alert(err.message || '삭제에 실패했습니다.');
+      toast.error(err.message || '삭제에 실패했습니다.');
     }
   };
 
@@ -79,8 +82,9 @@ export default function ReadingsPage() {
       setReadings(readings.map(r =>
         r.id === id ? { ...r, isFavorite: !r.isFavorite } : r
       ));
+      toast.success('즐겨찾기가 업데이트되었습니다');
     } catch (err: any) {
-      alert(err.message || '즐겨찾기 설정에 실패했습니다.');
+      toast.error(err.message || '즐겨찾기 설정에 실패했습니다.');
     }
   };
 
@@ -200,8 +204,10 @@ export default function ReadingsPage() {
 
       {/* Readings List */}
       {loading ? (
-        <div className="text-center py-12">
-          <p className="text-muted-foreground">리딩을 불러오는 중...</p>
+        <div className="grid gap-6">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <ReadingCardSkeleton key={i} />
+          ))}
         </div>
       ) : error ? (
         <div className="text-center py-12">

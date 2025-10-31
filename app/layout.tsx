@@ -5,6 +5,7 @@ import { KakaoProvider } from "@/components/providers/kakao-provider";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { WebsiteSchema, OrganizationSchema, WebApplicationSchema } from "@/components/seo/structured-data";
+import { Toaster } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://unwoldamstudio.vercel.app'),
@@ -63,6 +64,7 @@ export default function RootLayout({
         <OrganizationSchema />
         <WebApplicationSchema />
         <KakaoProvider />
+        <Toaster />
         <AuthProvider>
           <div className="flex min-h-screen flex-col">
             <Header />

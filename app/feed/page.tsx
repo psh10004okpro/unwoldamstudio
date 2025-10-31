@@ -4,8 +4,10 @@ import { useEffect, useState } from 'react';
 import { publicReadingsApi, readingsApi } from '@/lib/api/endpoints';
 import { Reading, CategoryType, PublicReadingFilters } from '@/lib/types/index';
 import { ReadingCard } from '@/components/readings/reading-card';
+import { ReadingCardSkeleton } from '@/components/readings/reading-card-skeleton';
 import { Button } from '@/components/ui/button';
 import { Filter, TrendingUp, Clock, Heart } from 'lucide-react';
+import { toast } from 'sonner';
 
 export default function FeedPage() {
   const [readings, setReadings] = useState<Reading[]>([]);
@@ -57,10 +59,11 @@ export default function FeedPage() {
 
       // API call
       await readingsApi.like(id);
+      toast.success('좋아요를 눌렀습니다');
     } catch (err: any) {
       // Revert on error
       fetchPublicReadings();
-      alert(err.message || '좋아요 처리에 실패했습니다.');
+      toast.error(err.message || '좋아요 처리에 실패했습니다.');
     }
   };
 
@@ -150,8 +153,10 @@ export default function FeedPage() {
 
       {/* Readings List */}
       {loading ? (
-        <div className="text-center py-12">
-          <p className="text-muted-foreground">공개 리딩을 불러오는 중...</p>
+        <div className="grid gap-6">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <ReadingCardSkeleton key={i} />
+          ))}
         </div>
       ) : error ? (
         <div className="text-center py-12">
