@@ -12,6 +12,7 @@ import { ArrowLeft, Heart, MessageCircle, Globe, Lock, Trash2 } from 'lucide-rea
 import { formatDateTime } from '@/lib/utils';
 import { ShareButton } from '@/components/share/share-dialog';
 import { ExportButton } from '@/components/export/export-button';
+import { CommentsSection } from '@/components/comments/comments-section';
 
 export default function ReadingDetailPage() {
   const params = useParams();
@@ -238,7 +239,7 @@ export default function ReadingDetailPage() {
       </Card>
 
       {/* Stats */}
-      <Card>
+      <Card className="mb-8">
         <CardContent className="pt-6">
           <div className="flex gap-6 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
@@ -252,6 +253,9 @@ export default function ReadingDetailPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Comments */}
+      <CommentsSection readingId={reading.id} initialCount={reading.commentsCount} />
     </div>
   );
 }
